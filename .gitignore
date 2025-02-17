@@ -1,0 +1,14 @@
+venv
+venv*
+*venv*
+*venv
+env
+env*
+*env
+*env*
+
+.DS_store
+DS_Store
+DS_store
+.DS_store
+
