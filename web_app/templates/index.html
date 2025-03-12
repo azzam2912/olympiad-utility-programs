@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4">Welcome to Olympiad Utility Programs</h2>
+        <p class="text-gray-700 mb-4">
+            This web application provides a collection of tools to help with various Olympiad-related tasks.
+            Select a tool from the categories below to get started.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- PDF Tools -->
+        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h2 class="text-xl font-bold mb-3 text-blue-600">PDF Tools</h2>
+            <p class="text-gray-600 mb-4">Tools for manipulating and extracting content from PDF files.</p>
+            <ul class="space-y-2 mb-4">
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Extract Images
+                </li>
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Extract Questions
+                </li>
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Split PDF
+                </li>
+                <li class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Remove Headers/Footers
+                </li>
+            </ul>
+            <a href="/pdf-tools" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Open PDF Tools
+            </a>
+        </div>
+
+        <!-- File Renamer -->
+        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h2 class="text-xl font-bold mb-3 text-blue-600">Olympiad File Renamer</h2>
+            <p class="text-gray-600 mb-4">Rename Olympiad PDF files to a standardized format for better organization.</p>
+            <p class="text-gray-600 mb-4">
+                This tool helps you batch rename Olympiad-related files according to a consistent naming convention,
+                making it easier to organize and find files later.
+            </p>
+            <a href="/file-renamer" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Open File Renamer
+            </a>
+        </div>
+
+        <!-- Picture Renamer -->
+        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h2 class="text-xl font-bold mb-3 text-blue-600">Picture Renamer</h2>
+            <p class="text-gray-600 mb-4">Rename pictures based on a names.txt file, useful for organizing participant photos.</p>
+            <p class="text-gray-600 mb-4">
+                Upload a zip file containing pictures and a names.txt file with the desired names,
+                and this tool will rename all the pictures accordingly.
+            </p>
+            <a href="/picture-renamer" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Open Picture Renamer
+            </a>
+        </div>
+
+        <!-- Web Scraper -->
+        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h2 class="text-xl font-bold mb-3 text-blue-600">Web PDF Scraper</h2>
+            <p class="text-gray-600 mb-4">Download PDFs from web sources like competition websites.</p>
+            <p class="text-gray-600 mb-4">
+                Supports universal scraping and specialized scraping for KOMA competition PDFs.
+                Simply provide the URL and choose the scraper type.
+            </p>
+            <a href="/web-scraper" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Open Web Scraper
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4">Web PDF Scraper</h2>
+        <p class="text-gray-700 mb-4">
+            This tool helps you download PDFs from web sources like competition websites.
+        </p>
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">
+                        Enter the URL of the webpage containing PDF links, and choose the appropriate scraper type.
+                        The tool will download all PDFs found on the page.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-bold mb-4">Web Scraper Settings</h3>
+        
+        <form hx-post="/web-scraper" 
+              hx-target="#result"
+              hx-indicator="#loading-indicator"
+              class="space-y-6">
+            
+            <!-- URL Input -->
+            <div>
+                <label for="url" class="block text-sm font-medium text-gray-700 mb-2">Website URL</label>
+                <input type="url" 
+                       name="url" 
+                       id="url"
+                       placeholder="https://example.com/olympiad-pdfs"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       required>
+                <p class="mt-1 text-sm text-gray-500">Enter the full URL of the webpage containing PDF links</p>
+            </div>
+            
+            <!-- Output Directory -->
+            <div>
+                <label for="output_dir" class="block text-sm font-medium text-gray-700 mb-2">Output Directory</label>
+                <input type="text" 
+                       name="output_dir" 
+                       id="output_dir"
+                       placeholder="e.g., ./downloads"
+                       value="./downloads"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <p class="mt-1 text-sm text-gray-500">Enter the directory where downloaded PDFs will be saved</p>
+            </div>
+            
+            <!-- Scraper Type Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Scraper Type</label>
+                <div class="mt-2 space-y-4">
+                    <div class="flex items-center">
+                        <input id="universal" name="scraper_type" type="radio" value="universal" class="h-4 w-4 text-blue-600 focus:ring-blue-500" checked>
+                        <label for="universal" class="ml-3 block text-sm font-medium text-gray-700">
+                            Universal Scraper
+                            <p class="text-sm text-gray-500">Works with most websites, detects and downloads PDF links</p>
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input id="koma" name="scraper_type" type="radio" value="koma" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                        <label for="koma" class="ml-3 block text-sm font-medium text-gray-700">
+                            KOMA Scraper
+                            <p class="text-sm text-gray-500">Specialized for KOMA competition website structure</p>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <button type="submit" 
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Start Scraping
+                </button>
+            </div>
+        </form>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="htmx-indicator mt-6 p-4 border border-green-200 bg-green-50 rounded-lg">
+            <div class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Scraping website for PDFs... This may take a moment.</span>
+            </div>
+        </div>
+        
+        <div id="result" class="mt-6">
+            <!-- HTMX will update this area -->
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+        <h3 class="text-xl font-bold mb-4">How It Works</h3>
+        
+        <div class="space-y-4">
+            <div>
+                <h4 class="font-semibold text-lg">1. URL Analysis</h4>
+                <p class="text-gray-600">
+                    The tool visits the provided URL and analyzes the page content.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">2. PDF Detection</h4>
+                <p class="text-gray-600">
+                    It identifies all PDF links on the page based on the selected scraper type.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">3. Automatic Download</h4>
+                <p class="text-gray-600">
+                    The tool downloads all detected PDFs to the configured download directory.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">Scraper Types</h4>
+                <ul class="list-disc pl-5 text-gray-600">
+                    <li><strong>Universal Scraper:</strong> Works with most websites by detecting links ending with .pdf</li>
+                    <li><strong>KOMA Scraper:</strong> Specialized for the KOMA competition website structure, which may have PDFs in specific locations or formats</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add hover effects to input fields
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputFields = document.querySelectorAll('input[type="url"], input[type="text"]');
+        
+        inputFields.forEach(field => {
+            field.addEventListener('focus', function() {
+                this.classList.add('ring-2', 'ring-blue-300');
+            });
+            
+            field.addEventListener('blur', function() {
+                this.classList.remove('ring-2', 'ring-blue-300');
+            });
+        });
+    });
+    
+    // Show result area when a form is submitted
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful) {
+            document.getElementById('result').classList.add('fade-in');
+            
+            // Format the response as a nice result
+            const resultDiv = document.getElementById('result');
+            const response = event.detail.xhr.response;
+            
+            try {
+                const data = JSON.parse(response);
+                let resultHTML = `
+                    <div class="border-l-4 ${data.status === 'success' ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'} p-4 mb-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 ${data.status === 'success' ? 'text-green-500' : 'text-red-500'}" viewBox="0 0 20 20" fill="currentColor">
+                                    ${data.status === 'success' 
+                                        ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />'
+                                        : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />'}
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm ${data.status === 'success' ? 'text-green-700' : 'text-red-700'}">
+                                    ${data.message}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add file list if available
+                if (data.files && data.files.length > 0) {
+                    resultHTML += `
+                        <div class="mt-4">
+                            <h4 class="text-lg font-semibold mb-2">Downloaded Files:</h4>
+                            <ul class="list-disc pl-5 space-y-1">
+                    `;
+                    
+                    data.files.forEach(file => {
+                        resultHTML += `<li class="text-gray-700">${file}</li>`;
+                    });
+                    
+                    if (data.total_files > data.files.length) {
+                        resultHTML += `<li class="text-gray-500">... and ${data.total_files - data.files.length} more files</li>`;
+                    }
+                    
+                    resultHTML += `
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Add output directory info
+                if (data.output_dir) {
+                    resultHTML += `
+                        <div class="mt-4 p-3 bg-gray-100 rounded">
+                            <p class="text-sm text-gray-700">
+                                <span class="font-semibold">Output directory:</span> ${data.output_dir}
+                            </p>
+                        </div>
+                    `;
+                }
+                
+                resultDiv.innerHTML = resultHTML;
+            } catch (e) {
+                resultDiv.innerHTML = `<div class="text-gray-700">${response}</div>`;
+            }
+        }
+    });
+</script>
+{% endblock %} 

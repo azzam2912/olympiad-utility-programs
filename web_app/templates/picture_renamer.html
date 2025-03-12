@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4">Picture Renamer</h2>
+        <p class="text-gray-700 mb-4">
+            This tool helps you rename pictures from olympiad competitions based on their content.
+        </p>
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">
+                        Upload a ZIP file containing images from olympiad competitions. The tool will analyze each image and rename it based on the competition, year, and problem number detected.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-bold mb-4">Upload Images</h3>
+        
+        <form hx-post="/rename-pictures" 
+              hx-target="#result"
+              hx-indicator="#loading-indicator"
+              enctype="multipart/form-data"
+              class="space-y-6">
+            
+            <!-- File Upload -->
+            <div>
+                <label for="zip_file" class="block text-sm font-medium text-gray-700 mb-2">ZIP File with Images</label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="zip_file" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                <span>Upload a ZIP file</span>
+                                <input id="zip_file" name="zip_file" type="file" accept=".zip" class="sr-only" required>
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            ZIP file containing images (.jpg, .jpeg, .png)
+                        </p>
+                    </div>
+                </div>
+                <div id="file-name" class="mt-2 text-sm text-gray-500"></div>
+            </div>
+            
+            <!-- Names Input -->
+            <div>
+                <label for="names_text" class="block text-sm font-medium text-gray-700 mb-2">Names List</label>
+                <textarea 
+                    name="names_text" 
+                    id="names_text"
+                    rows="6"
+                    placeholder="Enter one name per line, in the order you want to rename your pictures"
+                    class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required></textarea>
+                <p class="mt-1 text-sm text-gray-500">Enter one name per line, in the order you want to rename your pictures</p>
+            </div>
+            
+            <!-- Output Directory -->
+            <div>
+                <label for="output_dir" class="block text-sm font-medium text-gray-700 mb-2">Output Directory</label>
+                <input type="text" 
+                       name="output_dir" 
+                       id="output_dir"
+                       placeholder="e.g., ./renamed_images"
+                       value="./renamed_images"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <p class="mt-1 text-sm text-gray-500">Enter the directory where renamed images will be saved</p>
+            </div>
+
+            <div class="flex space-x-4">
+                <button type="submit" 
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Rename Pictures
+                </button>
+            </div>
+        </form>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="htmx-indicator mt-6 p-4 border border-blue-200 bg-blue-50 rounded-lg">
+            <div class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Analyzing and renaming images... This may take a moment.</span>
+            </div>
+        </div>
+        
+        <div id="result" class="mt-6">
+            <!-- HTMX will update this area -->
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+        <h3 class="text-xl font-bold mb-4">How It Works</h3>
+        
+        <div class="space-y-4">
+            <div>
+                <h4 class="font-semibold text-lg">1. Image Analysis</h4>
+                <p class="text-gray-600">
+                    The tool analyzes each image to identify competition information.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">2. Pattern Recognition</h4>
+                <p class="text-gray-600">
+                    It detects patterns that indicate the competition type, year, and problem number.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">3. Automatic Renaming</h4>
+                <p class="text-gray-600">
+                    Images are renamed according to a standardized format: [Competition]_[Year]_[Problem].jpg
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">Supported Competitions</h4>
+                <ul class="list-disc pl-5 text-gray-600">
+                    <li><strong>IMO:</strong> International Mathematical Olympiad</li>
+                    <li><strong>APMO:</strong> Asian Pacific Mathematics Olympiad</li>
+                    <li><strong>USAMO:</strong> USA Mathematical Olympiad</li>
+                    <li><strong>And many others...</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Display file name when selected
+    document.getElementById('zip_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || 'No file selected';
+        document.getElementById('file-name').textContent = 'Selected file: ' + fileName;
+    });
+    
+    // Add drag and drop highlighting
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropArea = document.querySelector('.border-2.border-dashed');
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('border-gray-300');
+                this.classList.add('border-blue-500', 'bg-blue-50');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('border-blue-500', 'bg-blue-50');
+                this.classList.add('border-gray-300');
+            }, false);
+        });
+        
+        // Handle actual file drop
+        dropArea.addEventListener('drop', function(e) {
+            const fileInput = document.getElementById('zip_file');
+            if (fileInput && e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                
+                // Trigger change event to update the label
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        }, false);
+        
+        // Add focus effect to textarea
+        const textarea = document.getElementById('names_text');
+        textarea.addEventListener('focus', function() {
+            this.classList.add('ring-2', 'ring-blue-300');
+        });
+        
+        textarea.addEventListener('blur', function() {
+            this.classList.remove('ring-2', 'ring-blue-300');
+        });
+    });
+    
+    // Show result area when a form is submitted
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.successful) {
+            document.getElementById('result').classList.add('fade-in');
+            
+            // Format the response as a nice result
+            const resultDiv = document.getElementById('result');
+            const response = event.detail.xhr.response;
+            
+            try {
+                const data = JSON.parse(response);
+                let resultHTML = `
+                    <div class="border-l-4 ${data.status === 'success' ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'} p-4 mb-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 ${data.status === 'success' ? 'text-green-500' : 'text-red-500'}" viewBox="0 0 20 20" fill="currentColor">
+                                    ${data.status === 'success' 
+                                        ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />'
+                                        : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />'}
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm ${data.status === 'success' ? 'text-green-700' : 'text-red-700'}">
+                                    ${data.message}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add file list if available
+                if (data.files && data.files.length > 0) {
+                    resultHTML += `
+                        <div class="mt-4">
+                            <h4 class="text-lg font-semibold mb-2">Renamed Files:</h4>
+                            <ul class="list-disc pl-5 space-y-1">
+                    `;
+                    
+                    data.files.forEach(file => {
+                        resultHTML += `<li class="text-gray-700">${file}</li>`;
+                    });
+                    
+                    if (data.total_files > data.files.length) {
+                        resultHTML += `<li class="text-gray-500">... and ${data.total_files - data.files.length} more files</li>`;
+                    }
+                    
+                    resultHTML += `
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Add output directory info
+                if (data.output_dir) {
+                    resultHTML += `
+                        <div class="mt-4 p-3 bg-gray-100 rounded">
+                            <p class="text-sm text-gray-700">
+                                <span class="font-semibold">Output directory:</span> ${data.output_dir}
+                            </p>
+                        </div>
+                    `;
+                }
+                
+                resultDiv.innerHTML = resultHTML;
+            } catch (e) {
+                resultDiv.innerHTML = `<div class="text-gray-700">${response}</div>`;
+            }
+        }
+    });
+</script>
+{% endblock %} 

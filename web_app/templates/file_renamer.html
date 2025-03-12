@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4">Olympiad File Renamer</h2>
+        <p class="text-gray-700 mb-4">
+            This tool helps you rename Olympiad PDF files to a standardized format for better organization.
+        </p>
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700">
+                        This tool will scan a directory for PDF files and rename them according to a standardized format.
+                        Make sure your files are in the correct directory before proceeding.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-bold mb-4">Start File Renaming Process</h3>
+        
+        <div class="mb-6">
+            <p class="text-gray-600 mb-4">
+                The file renamer will scan the specified directory for PDF files and rename them according to the following pattern:
+            </p>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <code class="text-sm">
+                    [competition_name] - [year] - [level] - [author_name].pdf
+                </code>
+            </div>
+        </div>
+        
+        <form id="olympiad-form" class="space-y-4">
+            
+            <div class="mt-4">
+                <label for="directory-path" class="block text-sm font-medium text-gray-700">Directory Path</label>
+                
+                <!-- Drag and Drop Area -->
+                <div id="drag-drop-area" 
+                     class="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition-colors">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4h-8m-12 0H8m12 0a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
+                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600 justify-center">
+                            <p class="pl-1">Drag and drop a folder here or</p>
+                            <p class="pl-1 text-blue-500">browse</p>
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            Folder path will be automatically filled in the input field below
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Regular Input Field (kept from original) -->
+                <input type="text" 
+                       name="directory" 
+                       id="directory-path"
+                       placeholder="e.g., /path/to/olympiad/pdfs"
+                       value="./"
+                       class="mt-3 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <p class="mt-1 text-sm text-gray-500">Enter the path to the directory containing PDF files to rename</p>
+            </div>
+            
+            <div class="mt-4">
+                <label for="tingkatan" class="block text-sm font-medium text-gray-700">Education Level (Tingkatan)</label>
+                <select name="tingkatan" 
+                        id="tingkatan"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="SMA">SMA (High School)</option>
+                    <option value="SMP">SMP (Middle School)</option>
+                    <option value="SD">SD (Elementary School)</option>
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Select the education level for the olympiad files</p>
+            </div>
+            
+            <div class="flex space-x-4">
+                <button type="submit" 
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Start Renaming Process
+                </button>
+            </div>
+        </form>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="htmx-indicator mt-6 p-4 border border-blue-200 bg-blue-50 rounded-lg">
+            <div class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Renaming files... This may take a moment.</span>
+            </div>
+        </div>
+        
+        <div id="olympiad-result" class="mt-6">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+        <h3 class="text-xl font-bold mb-4">How It Works</h3>
+        
+        <div class="space-y-4">
+            <div>
+                <h4 class="font-semibold text-lg">1. File Detection</h4>
+                <p class="text-gray-600">
+                    The tool scans the configured directory for PDF files that match Olympiad naming patterns.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">2. Pattern Recognition</h4>
+                <p class="text-gray-600">
+                    It analyzes each filename to extract information like year, country, competition level, and language.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">3. Standardized Renaming</h4>
+                <p class="text-gray-600">
+                    Files are renamed to follow a consistent pattern, making them easier to organize and find.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg">4. Verification</h4>
+                <p class="text-gray-600">
+                    The tool verifies each rename operation and reports success or failure.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Drag and drop functionality for directory path
+        const dragDropArea = document.getElementById('drag-drop-area');
+        const directoryInput = document.getElementById('directory-path');
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dragDropArea.classList.add('border-blue-500', 'bg-blue-50');
+        }
+        
+        function unhighlight() {
+            dragDropArea.classList.remove('border-blue-500', 'bg-blue-50');
+        }
+        
+        // Handle dropped files/folders
+        dragDropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const items = dt.items;
+            
+            if (items) {
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    // webkitGetAsEntry is used to get the entry (file or directory)
+                    const entry = item.webkitGetAsEntry();
+                    
+                    if (entry.isDirectory) {
+                        // If it's a directory, get its path
+                        directoryInput.value = entry.fullPath;
+                        console.log('Directory dropped:', entry.fullPath);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Click to browse functionality
+        dragDropArea.addEventListener('click', function() {
+            // Create a file input element
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.webkitdirectory = true; // Allow directory selection
+            fileInput.directory = true; // Non-standard attribute for Firefox
+            
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    // Get the path of the first file and extract the directory
+                    const filePath = e.target.files[0].webkitRelativePath;
+                    const directoryPath = filePath.split('/')[0];
+                    directoryInput.value = directoryPath;
+                    console.log('Directory selected via browse:', directoryPath);
+                    console.log('Files in directory:', e.target.files);
+                }
+            });
+            
+            fileInput.click();
+        });
+        
+        // Olympiad File Renamer form submission
+        const olympiadForm = document.getElementById('olympiad-form');
+        if (olympiadForm) {
+            olympiadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const directoryPath = document.getElementById('directory-path').value;
+                const tingkatan = document.getElementById('tingkatan').value;
+                const resultDiv = document.getElementById('olympiad-result');
+                
+                console.log('Form submitted with:', {
+                    directory: directoryPath,
+                    educationLevel: tingkatan
+                });
+                
+                resultDiv.innerHTML = '<div class="loading-spinner"></div><p>Processing files...</p>';
+                
+                const formData = new FormData();
+                formData.append('directory', directoryPath);
+                formData.append('tingkatan', tingkatan);
+                
+                fetch('/rename-olympiad', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Server response:', data);
+                    let resultHTML = '';
+                    
+                    if (data.status === 'success') {
+                        resultHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> ${data.message}
+                            </div>
+                            <p>Education Level: ${data.education_level}</p>
+                            <p>Output Directory: ${data.output_dir}</p>
+                        `;
+                        
+                        if (data.files && data.files.length > 0) {
+                            resultHTML += '<h5>Renamed Files:</h5><ul>';
+                            data.files.forEach(file => {
+                                resultHTML += `<li>${file}</li>`;
+                            });
+                            resultHTML += '</ul>';
+                            
+                            if (data.total_files > data.files.length) {
+                                resultHTML += `<p>...and ${data.total_files - data.files.length} more files</p>`;
+                            }
+                        }
+                    } else if (data.status === 'info') {
+                        resultHTML = `
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> ${data.message}
+                            </div>
+                            <p>Education Level: ${data.education_level}</p>
+                            <p>Directory: ${data.output_dir}</p>
+                        `;
+                        
+                        if (data.files && data.files.length > 0) {
+                            resultHTML += '<h5>PDF Files in Directory:</h5><ul>';
+                            data.files.forEach(file => {
+                                resultHTML += `<li>${file}</li>`;
+                            });
+                            resultHTML += '</ul>';
+                            
+                            if (data.total_files > data.files.length) {
+                                resultHTML += `<p>...and ${data.total_files - data.files.length} more files</p>`;
+                            }
+                        }
+                    } else {
+                        resultHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i> ${data.message}
+                            </div>
+                        `;
+                    }
+                    
+                    resultDiv.innerHTML = resultHTML;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Error: ${error.message}
+                        </div>
+                    `;
+                });
+            });
+        }
+        
+        // Picture Renamer form submission
+        // ... existing code ...
+    });
+</script>
+{% endblock %} 
