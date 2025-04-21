@@ -35,7 +35,7 @@ def rename_pictures(directory_path, names_file_path):
         return
 
     # Sort files by creation time and filename
-    image_files.sort(key=lambda x: (os.path.getctime(os.path.join(directory_path, x)), x))
+    image_files.sort(key=lambda x: (os.path.getctime(os.path.join(directory_path, x)), x), reverse=True)
 
     # Check if we have enough names
     if len(image_files) > len(names):

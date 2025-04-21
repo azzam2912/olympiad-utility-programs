@@ -58,7 +58,8 @@ def remove_header_footer(input_pdf_path, output_folder="pdf-output-header-footer
         img_array = np.frombuffer(img_data, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
         
         # Detect header and footer heights
-        header_pixels, footer_pixels = detect_header_footer_heights(img_array)
+        #header_pixels, footer_pixels = detect_header_footer_heights(img_array)
+        header_pixels, footer_pixels = 0,0
         
         # Calculate proportions
         page_height = float(first_page.rect.height)
@@ -68,6 +69,11 @@ def remove_header_footer(input_pdf_path, output_folder="pdf-output-header-footer
         # Add small margin
         header_proportion += 0.01
         footer_proportion += 0.01
+
+        header_proportion = 0.15
+        footer_proportion = 0.1
+        left_margin = 0.1
+        right_margin = 0.1
 
         # Now use PyPDF2 for the actual cropping
         reader = PdfReader(input_pdf_path)
@@ -80,6 +86,10 @@ def remove_header_footer(input_pdf_path, output_folder="pdf-output-header-footer
             # Apply detected proportions
             header_height = original_height * header_proportion
             footer_height = original_height * footer_proportion
+            
+            # Apply left and right margins
+            media_box.left = float(media_box.left) + original_height * left_margin
+            media_box.right = float(media_box.right) - original_height * right_margin
             
             # Crop the page
             page.mediabox.top = float(media_box.top) - header_height

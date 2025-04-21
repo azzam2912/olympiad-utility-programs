@@ -23,10 +23,10 @@ def ensure_renamed_folder(base_dir):
 
 class OlympiadRenamer:
     MIN_YEAR = 2002
-    MAX_YEAR = 2024
+    MAX_YEAR = 2025
 
     # Dictionary for type translations
-    TYPE_TRANSLATIONS = {
+    COMPETITION_NAME_TRANSLATIONS = {
         'kabupaten': 'OSK',
         'kota': 'OSK',
         'provinsi': 'OSP',
@@ -56,13 +56,24 @@ class OlympiadRenamer:
         'amfibi': 'AMFIBI',
         'primagama': 'PRIMAGAMA',
         'vektor': 'OMVN',
+        'omvn': 'OMVN',
+        'imso': 'IMSO',
+        'latihan': 'LATIHAN OLIMPIADE',
+    }
+
+    COMPETITION_NAME_TRANSLATIONS_INTERNATIONAL = {
+        'IMO',
+        'IMSO',
     }
 
     CONTENT_TRANSLATIONS = {
         'soal': 'Soal',
         'solusi': 'Solusi',
         'kunci': 'Kunci',
-        'pembahasan': 'Solusi'
+        'pembahasan': 'Solusi',
+        'problems': 'Problems',
+        'problem': 'Problems',
+        'solution': 'Solution',
     }
 
     AUTHOR = {
@@ -77,23 +88,44 @@ class OlympiadRenamer:
         'm2suidhat': 'Moh. Tohir',
         'yoapriyanto': 'Moh. Tohir',
         'siaposn': 'siap-osn.blogspot.com',
+        'gurusekali': 'gurusekali.com',
+        'defantri': 'defantri.com',
+        'hendri purnomo': 'Hendri Purnomo',
     }
 
-    TIPE = {
+    QUESTIONS_TYPE = {
+        'isian singkat': 'Isian Singkat',
+        'isian' : 'Isian Singkat',
+        'pilihan ganda': 'Pilihan Ganda',
+        'pilgan': 'Pilihan Ganda',
+        'esai': 'Esai',
+        'uraian': 'Esai',
+        'eksplorasi': 'Eksplorasi',
+        'eksploratif': 'Eksplorasi',
+        'short answer': 'Short Answer',
+        'exploration': 'Exploration',
+        'essay': 'Essay',
+        ' sa': 'Short Answer',
+    }
+
+    PROBLEM_SET_TYPE = {
         'tipe 1': 'Tipe 1',
         'tipe 2': 'Tipe 2',
         'tipe 3': 'Tipe 3',
+        'tipe a': 'Tipe A',
+        'tipe b': 'Tipe B',
+        'tipe c': 'Tipe C',
+        'type 1': 'Tipe 1',
+        'type 2': 'Tipe 2',
+        'type 3': 'Tipe 3',
+        'type a': 'Tipe A',
+        'type b': 'Tipe B',
+        'type c': 'Tipe C',
         'offline': 'Offline',
         'online': 'Online',
         'versi 1': 'Versi 1',
         'versi 2': 'Versi 2',
         'versi 3': 'Versi 3',
-        'isian singkat': 'Isian Singkat',
-        'pilihan ganda': 'Pilihan Ganda',
-        'esai': 'Esai',
-        'essay': 'Esai',
-        'uraian': 'Esai',
-        'pilgan': 'Pilihan Ganda',
         'bagian a': 'Bagian A',
         'bagian b': 'Bagian B',
         'bagian c': 'Bagian C',
@@ -118,6 +150,15 @@ class OlympiadRenamer:
             r'd2|day\s*2|hari\s*2|hari\s*kedua': 'Hari 2'
         }
         self.tingkatan = tingkatan
+        self.international_type = False
+
+    def is_international(self, filename):
+        filename_lower = filename.lower()
+        for alt_name, official_name in self.COMPETITION_NAME_TRANSLATIONS.items():
+            if alt_name in filename_lower:
+                if official_name in self.COMPETITION_NAME_TRANSLATIONS_INTERNATIONAL:
+                    return True
+        return False
 
     def extract_year(self, filename):
         # Try to find 4-digit year first
@@ -143,29 +184,39 @@ class OlympiadRenamer:
             if self.MIN_YEAR <= full_year <= self.MAX_YEAR:
                 return full_year
         
-        return None
+        return -1
 
-    def extract_type(self, filename):
+    def extract_competition_name(self, filename):
         # First check translations
         filename_lower = filename.lower()
-        for alt_name, official_name in self.TYPE_TRANSLATIONS.items():
+        for alt_name, official_name in self.COMPETITION_NAME_TRANSLATIONS.items():
             if alt_name in filename_lower:
+                if self.international_type:
+                    return official_name
                 return official_name + " "+ self.tingkatan
         
-        return None
+        return ""
 
     def is_shortlist(self, filename):
         return bool(re.search(r'shortlist|usulan', filename.lower()))
 
-    def extract_content(self, filename):
+    def extract_content_type_level(self, filename):
         final_name = ""
         filename = filename.lower()
         for alt_name, official_name in self.CONTENT_TRANSLATIONS.items():
             if alt_name in filename:
-                final_name = official_name
-        tipe = self.extract_tipe(filename)
-        if tipe:
-            final_name += " " + tipe
+                if final_name != "":
+                    final_name += " dan " + official_name
+                else:
+                    final_name = official_name
+        if final_name == "":
+            if self.international_type:
+                final_name = "Problems"
+            else:
+                final_name = "Soal"
+        questions_type_level = self.extract_questions_type_level(filename)
+        if len(final_name) > 0 and len(questions_type_level) > 0:
+            final_name += " " + questions_type_level
         return final_name
 
     def extract_day(self, filename):
@@ -173,7 +224,7 @@ class OlympiadRenamer:
         for pattern, replacement in self.day_patterns.items():
             if re.search(pattern, filename, re.IGNORECASE):
                 return replacement
-        return None
+        return ""
 
     def normalize_spacing(self, text):
         # Remove extra spaces and normalize separators
@@ -185,22 +236,30 @@ class OlympiadRenamer:
         for alt_name, official_name in self.AUTHOR.items():
             if alt_name in filename:
                 return official_name
-        return None
+        return ""
     
-    def extract_tipe(self, filename):
+    def extract_questions_type_level(self, filename):
         temp_name = ''
         filename = filename.lower()
         for alt_name, level_name in self.LEVEL.items():
             if alt_name in filename:
                 temp_name += level_name
-        for alt_name, official_name in self.TIPE.items():
+        for alt_name, official_name in self.QUESTIONS_TYPE.items():
             if alt_name in filename:
-                temp_name = temp_name + " " + official_name
+                if len(temp_name) > 0:
+                    temp_name = temp_name + " " + official_name
+                else:
+                    temp_name = official_name
+                break
+        for alt_name, official_name in self.PROBLEM_SET_TYPE.items():
+            if alt_name in filename:
+                if len(temp_name) > 0:
+                    temp_name = temp_name + " " + official_name
+                else:
+                    temp_name = official_name
+                return temp_name
         
-        if len(temp_name) > 0:
-            return temp_name
-        else:
-            return None
+        return temp_name
 
     def process_file(self, filepath):
         path = Path(filepath)
@@ -210,10 +269,13 @@ class OlympiadRenamer:
 
         # Normalize filename for better pattern matching
         normalized_name = self.normalize_spacing(path.stem)
+
+        # Check if the file is international
+        self.international_type = self.is_international(normalized_name)
         
         # Extract components
         year = self.extract_year(normalized_name)
-        if not year:
+        if year < 0:
             print(f"Error: Could not determine valid year for '{path.name}'")
             return False, None
 
@@ -222,20 +284,20 @@ class OlympiadRenamer:
             new_name = f"Shortlist - {year} - Official.pdf"
         else:
             # Regular file processing
-            olympiad_type = self.extract_type(normalized_name)
-            if not olympiad_type:
-                print(f"Error: Could not determine type (OSK/OSP/OSN) for '{path.name}'")
+            competition_name = self.extract_competition_name(normalized_name)
+            if len(competition_name) <= 0:
+                print(f"Error: Could not determine competition's name (OSK/OSP/OSN/etc) for '{path.name}'")
                 return False, None
 
-            content = self.extract_content(normalized_name)
+            content_type_level = self.extract_content_type_level(normalized_name)
             day = self.extract_day(normalized_name)
             author = self.extract_author(normalized_name)
 
             # Construct new filename
-            new_name_parts = [olympiad_type, str(year), content]
-            if day:
+            new_name_parts = [competition_name, str(year), content_type_level]
+            if len(day) > 0:
                 new_name_parts.append(day)
-            if author:
+            if len(author) > 0:
                 new_name_parts.append(author)
             new_name = ' - '.join(new_name_parts)
             if '.pdf' not in new_name:
@@ -263,7 +325,7 @@ class OlympiadRenamer:
 
             # Copy the file to the renamed directory
             shutil.copy2(path, new_path)
-            print(f"Renamed and copied: '{path.name}' → '{new_path.name}'")
+            #print(f"Renamed and copied: '{path.name}' → '{new_path.name}'")
             return True, new_path
         except Exception as e:
             print(f"Error processing '{path.name}': {e}")
